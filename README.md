@@ -206,11 +206,11 @@ tail -f logs/spring-boot-logger.log
 ```
 # EXpected log sequence
 
-14:30:01 INFO  - Order 1 added to queue for processing
-14:30:02 INFO  - Processing order: 1
-14:30:02 INFO  - Order 1 status updated to PROCESSING
-14:30:06 INFO  - Order 1 status updated to PROCESSED
-14:30:06 INFO  - Order 1 processed successfully
+INFO  - Order 1 added to queue for processing
+INFO  - Processing order: 1
+INFO  - Order 1 status updated to PROCESSING
+INFO  - Order 1 status updated to PROCESSED
+INFO  - Order 1 processed successfully
 
 ### Step 4: Verify Status Changes: Check order status progression
 ```bash
