@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Queue Monitor</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .order { 
+            background: white; 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status { 
+            display: inline-block; 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+            font-weight: bold;
+        }
+        .PENDING { background: #ffd700; }
+        .PROCESSING { background: #87ceeb; }
+        .PROCESSED { background: #90ee90; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Queue Processing Monitor</h1>
+        
+        <div>
+            <button onclick="createOrder()">Create New Order</button>
+            <button onclick="create5Orders()">Create 5 Orders</button>
+            <button onclick="refreshStatus()">Refresh Status</button>
+        </div>
+        
+        <h2>Orders Status:</h2>
+        <div id="orders"></div>
+    </div>
+
+    <script>
+        let orderCount = 0;
+        
+        async function createOrder() {
+            orderCount++;
+            const order = {
+                customerName: `Customer ${orderCount}`,
+                items: [{
+                    name: `Item ${orderCount}`,
+                    quantity: 1,
+                    price: 10.99
+                }],
+                totalAmount: 10.99
+            };
+            
+            const response = await fetch('http://localhost:8080/api/orders', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(order)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Order created:', data);
+                setTimeout(refreshStatus, 500);
+            }
+        }
+        
+        async function create5Orders() {
+            for(let i = 0; i < 5; i++) {
+                await createOrder();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+        
+        async function refreshStatus() {
+            const ordersDiv = document.getElementById('orders');
+            ordersDiv.innerHTML = '';
+            
+            // Fetch last 10 orders
+            const response = await fetch('http://localhost:8080/api/orders?size=10&sort=id,desc');
+            const data = await response.json();
+            
+            data.content.forEach(order => {
+                ordersDiv.innerHTML += `
+                    <div class="order">
+                        <strong>Order #${order.id}</strong> - ${order.customerName}
+                        <span class="status ${order.status}">${order.status}</span>
+                        <br>
+                        <small>Created: ${new Date(order.createdAt).toLocaleTimeString()}</small>
+                        ${order.updatedAt !== order.createdAt ? 
+                          `<br><small>Updated: ${new Date(order.updatedAt).toLocaleTimeString()}</small>` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        // Auto-refresh every 2 seconds
+        setInterval(refreshStatus, 2000);
+        
+        // Initial load
+        refreshStatus();
+    </script>
+</body>
+</html>
